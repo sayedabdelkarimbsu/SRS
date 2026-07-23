@@ -1,0 +1,5 @@
+cd "C:\Users\SayedAbdelkarim\Desktop\srs-system-backup (1)\backend"; (Get-Content server.js) -replace '5000', '5001' -replace '0.0.0.0', 'localhost' | Out-File -Encoding utf8 server.js; npm run dev
+# 1️⃣ بناء المشروع
+cd "C:\Users\SayedAbdelkarim\Desktop\srs-system-backup (1)\srs-system"
+npm run buildnode_modules
+node_modules

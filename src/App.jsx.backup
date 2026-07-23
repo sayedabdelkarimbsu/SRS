@@ -1,0 +1,183 @@
+import React, { useState, useEffect } from 'react';
+import {
+  PersonalInfo,
+  ContactInfo,
+  ProfessionalProfiles,
+  AcademicQualifications,
+  WorkExperience,
+  ScientificResearch,
+  ResearchProjects,
+  SkillsInventory,
+  LanguageProficiency,
+  Certifications,
+  Conferences,
+  EmploymentPreferences,
+  ProfessionalReferences,
+  DocumentManagement
+} from './Sections';
+import './App.css';
+
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
+  const [email, setEmail] = useState('');
+  const [success, setSuccess] = useState('');
+  const [activeSection, setActiveSection] = useState('personal');
+  const [profile, setProfile] = useState({
+    personal: {}, contact: {}, professional: {}, academic: [],
+    experience: [], research: {}, projects: [], skills: {},
+    languages: [], certifications: [], conferences: {},
+    preferences: {}, references: [], documents: []
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('session');
+    if (saved) {
+      setIsLoggedIn(true);
+      setUsername(JSON.parse(saved).username);
+      // تحميل الملف الشخصي
+      const savedProfile = localStorage.getItem('profile');
+      if (savedProfile) {
+        try { setProfile(JSON.parse(savedProfile)); } catch {}
+      }
+    }
+  }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    if (isRegister) {
+      if (users.find(u => u.username === username)) {
+        setError('اسم المستخدم موجود');
+        return;
+      }
+      users.push({ username, password, email });
+      localStorage.setItem('users', JSON.stringify(users));
+      setSuccess('✅ تم إنشاء الحساب!');
+      setTimeout(() => setIsRegister(false), 1000);
+      return;
+    }
+
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      localStorage.setItem('session', JSON.stringify({ username }));
+      setIsLoggedIn(true);
+      setUsername(username);
+      setError('');
+    } else {
+      setError('بيانات غير صحيحة');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('session');
+    localStorage.removeItem('profile');
+    setIsLoggedIn(false);
+    setUsername('');
+  };
+
+  const saveProfile = (newProfile) => {
+    setProfile(newProfile);
+    localStorage.setItem('profile', JSON.stringify(newProfile));
+  };
+
+  const sections = [
+    { id: 'personal', label: '👤 شخصي', component: PersonalInfo },
+    { id: 'contact', label: '📞 تواصل', component: ContactInfo },
+    { id: 'professional', label: '🔗 ملفات مهنية', component: ProfessionalProfiles },
+    { id: 'academic', label: '🎓 مؤهلات', component: AcademicQualifications },
+    { id: 'experience', label: '💼 خبرات', component: WorkExperience },
+    { id: 'research', label: '📊 بحث علمي', component: ScientificResearch },
+    { id: 'projects', label: '🔬 مشاريع', component: ResearchProjects },
+    { id: 'skills', label: '🛠️ مهارات', component: SkillsInventory },
+    { id: 'languages', label: '🌐 لغات', component: LanguageProficiency },
+    { id: 'certifications', label: '📜 شهادات', component: Certifications },
+    { id: 'conferences', label: '🎯 مؤتمرات', component: Conferences },
+    { id: 'preferences', label: '💼 تفضيلات', component: EmploymentPreferences },
+    { id: 'references', label: '👥 مراجع', component: ProfessionalReferences },
+    { id: 'documents', label: '📁 مستندات', component: DocumentManagement }
+  ];
+
+  if (!isLoggedIn) {
+    return (
+      <div className="auth-page">
+        <div className="auth-container">
+          <h1>🔐 SRS</h1>
+          <p>{isRegister ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</p>
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label>اسم المستخدم</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value)} required />
+            </div>
+            {isRegister && (
+              <div className="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+            )}
+            <div className="form-group">
+              <label>كلمة المرور</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+            {error && <div className="auth-error">{error}</div>}
+            {success && <div className="auth-success">{success}</div>}
+            <button type="submit" className="btn btn-primary btn-block">
+              {isRegister ? '✅ إنشاء حساب' : '🔑 دخول'}
+            </button>
+          </form>
+          <p className="auth-switch">
+            {isRegister ? 'لديك حساب؟' : 'ليس لديك حساب؟'}
+            <a href="#" onClick={e => { e.preventDefault(); setIsRegister(!isRegister); setError(''); setSuccess(''); }}>
+              {isRegister ? ' سجل دخول' : ' سجل الآن'}
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const CurrentSection = sections.find(s => s.id === activeSection)?.component || PersonalInfo;
+
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="header-content">
+          <h1>📚 SRS</h1>
+          <div className="header-status">
+            <span className="status online">🟢 متصل</span>
+            <span className="user-badge">👤 {username}</span>
+            <button className="btn btn-danger btn-sm" onClick={handleLogout}>🚪 خروج</button>
+          </div>
+        </div>
+      </header>
+      
+      <div className="main-layout">
+        <nav className="sidebar">
+          {sections.map(s => (
+            <button
+              key={s.id}
+              className={`sidebar-item ${activeSection === s.id ? 'active' : ''}`}
+              onClick={() => setActiveSection(s.id)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </nav>
+        
+        <main className="content">
+          <CurrentSection profile={profile} onSave={saveProfile} />
+        </main>
+      </div>
+
+      <footer className="footer">
+        <p>SRS v4.0 | 14 قسم متكامل | {username}</p>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
