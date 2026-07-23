@@ -1,14 +1,21 @@
-﻿import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+﻿import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    port: 5173,
-    host: true
-  },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets'
+    rollupOptions: {
+      external: [],
+      onwarn(warning, warn) {
+        if (warning.code === "MODULE_LEVEL_DIRECTIVE") return;
+        if (warning.message.includes("react-hook-form")) return;
+        if (warning.message.includes("@hookform/resolvers")) return;
+        warn(warning);
+      }
+    }
+  },
+  server: {
+    host: true,
+    port: 5173
   }
 });
