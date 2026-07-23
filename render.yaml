@@ -1,0 +1,28 @@
+﻿services:
+  - type: web
+    name: srs-frontend
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://srs-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: srs-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://user:pass@localhost:5432/srs
+      - key: JWT_SECRET
+        value: your-super-secret-key
+      - key: CORS_ORIGIN
+        value: https://srs-frontend.onrender.com
